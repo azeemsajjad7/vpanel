@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
     next();
   });
   
@@ -75,7 +76,7 @@ app.post('/topic', function (req, res) {
     let topic_text = req.body.topic_text;
     let sql = `
     insert into topic(user_id,topic_text,created_on,updated_on,expires_on)
-    values($1,$2,now(),now(),now() + interval '1 day')
+    values($1,$2,now(),now(),now() + interval '1 day') returning id
     `
 
     client.query(
@@ -221,7 +222,7 @@ app.post('/user_link', function (req, res) {
                         {
                             apikey: config.smsAPIKey,
                             numbers: '91' + phone_no,
-                            message: 'Hi welocme to letsurvey, please click on http://letsurvey.tk/link/' + response.rows[0].id + ' to proceed',
+                            message: 'Hi welocme to letsurvey, please click on http://letsurvey.tk/link?id=' + response.rows[0].id + ' to proceed',
                             sender: config.smsSender
                         }
                     };
@@ -274,7 +275,7 @@ app.get('/link_questions/:id',function(req,res)
     {
         let id = req.params.id;
         let sql = `select q.* from user_link ul inner join question q on ul.topic_id=q.topic_id
-        where ul.id=$1`
+        where ul.id=$1 and ul.id not in (select user_link_id from user_response)`
         client.query
         (
             sql,
@@ -321,7 +322,31 @@ app.get('/topic_questions/:id',function (req, res)
         )
     }
 )
-
+app.get('/topics/:user_id',function(req,res){
+    let user_id=req.params.user_id;
+    let sql="select * from topic where user_id=$1"
+    client.query
+    (
+        sql,
+        [user_id],
+        function (err, response) {
+            if (err) {
+                res.send({
+                    success: false,
+                    error: err
+                })
+            } else {
+                res.send({
+                    success: true,
+                    result: response.rows
+                })
+            }
+        }
+    )
+});
+app.use('/link',function(req,res){
+    res.sendFile(__dirname + "/user_survey.html")
+})
 app.use('/', function (req, res) {
     res.send('Hello')
 });

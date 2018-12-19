@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <base href="/link">
+</head>
+
+<body ng-app="myapp">
+    <div ng-controller="HomeController">
+        <div ng-show="state==1">
+            <div ng-show="question">
+                <form ng-submit="submitQuestion()">
+                    <strong>{{question.question_text}}</strong>
+                    <div ng-show="question.question_type=='yes_no'">
+                        <table style="width:100%;">
+                            <tr>
+                                <td style="width:50%;">
+                                    <input type="radio" name="response" id="yes_opt" ng-model="response" value="1">
+                                    <label for="yes_opt">Yes</label>
+                                </td>
+                                <td>
+                                    <input type="radio" name="response" id="no_opt" ng-model="response" value="2">
+                                    <label for="no_opt">No</label>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    <div ng-show="question.question_type=='multiple'">
+                        <table style="width:100%;">
+                            <tr>
+                                <td style="width:50%;">
+                                    <input type="radio" name="response" id="opt1" ng-model="response" value="1"> <label
+                                        for="opt1">{{question.opt1}}</label>
+                                </td>
+                                <td>
+                                    <input type="radio" name="response" id="opt2" ng-model="response" value="2"> <label
+                                        for="opt2">{{question.opt2}}</label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:50%;">
+                                    <input type="radio" name="response" id="opt3" ng-model="response" value="3"> <label
+                                        for="opt3">{{question.opt3}}</label>
+                                </td>
+                                <td>
+                                    <input type="radio" name="response" id="opt4" ng-model="response" value="4"> <label
+                                        for="opt4">{{question.opt4}}</label>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    <button>Submit</button>
+                </form>
+            </div>
+        </div>
+        <div ng-show="state==2">
+            Thanks for your feedback
+        </div>
+
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.min.js"></script>
+    <script>
+        var myapp = angular.module('myapp', []);
+        myapp.config(function ($locationProvider) {
+            $locationProvider.html5Mode(true)
+        });
+        myapp.constant('API_PREFIX', 'http://letsurvey.tk/')
+        myapp.controller('HomeController', function ($location, $http, API_PREFIX, $scope) {
+            let link_id = $location.search().id;
+            $scope.state = 1;
+            $scope.questions = [];
+            $scope.question = null;
+            $scope.index = 0;
+            $http({
+                url: API_PREFIX + 'link_questions/' + link_id,
+                method: 'GET'
+            }).then(function (response) {
+                console.log(response.data)
+                $scope.questions = response.data.result;
+                if($scope.questions.length==0){
+                    alert('Your feedback is already submitted');
+                    $scope.state=2;
+                }else{
+                    $scope.question = $scope.questions[0];
+                }
+                
+            }).catch(function (response) {
+                alert('Something went wrong!')
+            });
+            $scope.submitQuestion = function () {
+                $http({
+                    url: API_PREFIX + 'user_response',
+                    method: 'POST',
+                    data: {
+                        user_link_id: link_id,
+                        question_id: $scope.question.id,
+                        response: $scope.response
+
+                    }
+                }).then(function (response) {
+                    $scope.index++;
+                    if ($scope.index == $scope.questions.length) {
+                        $scope.state = 2;
+                    } else {
+                        $scope.question = $scope.questions[$scope.index];
+                        $scope.response = null;
+                    }
+
+                }).catch(function (response) {
+                    alert('Something went wrong!')
+                });
+            }
+        })
+    </script>
+</body>
+
+</html>
