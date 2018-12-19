@@ -1,0 +1,25 @@
+{
+  "name": "vpanel",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azeemsajjad7/vpanel.git"
+  },
+  "author": "Azeem",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/azeemsajjad7/vpanel/issues"
+  },
+  "homepage": "https://github.com/azeemsajjad7/vpanel#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "pg": "^7.7.1",
+    "request": "^2.88.0"
+  }
+}
