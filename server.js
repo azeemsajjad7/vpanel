@@ -347,6 +347,9 @@ app.get('/topics/:user_id',function(req,res){
 app.use('/link',function(req,res){
     res.sendFile(__dirname + "/user_survey.html")
 })
+app.use('/privacy_policy',function(req,res){
+    res.sendFile(__dirname + "/privacy_policy.html")
+})
 app.use('/', function (req, res) {
     res.send('Hello')
 });
